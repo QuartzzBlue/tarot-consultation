@@ -43,75 +43,66 @@
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.141 0.005 285.823);
-  --destructive: oklch(0.577 0.245 27.325);
+  --radius: 0.625rem;
+
+  /* Deep Midnight Dark Theme */
+  --background: oklch(0.08 0.02 280);
+  --foreground: oklch(0.92 0.04 60);
+
+  --card: oklch(0.11 0.025 270);
+  --card-foreground: oklch(0.92 0.04 60);
+
+  --popover: oklch(0.10 0.025 270);
+  --popover-foreground: oklch(0.92 0.04 60);
+
+  /* Gold Primary */
+  --primary: oklch(0.78 0.14 75);
+  --primary-foreground: oklch(0.10 0.02 270);
+
+  --secondary: oklch(0.16 0.03 270);
+  --secondary-foreground: oklch(0.85 0.06 70);
+
+  --muted: oklch(0.14 0.025 270);
+  --muted-foreground: oklch(0.60 0.04 70);
+
+  /* Mystical Purple Accent */
+  --accent: oklch(0.35 0.12 290);
+  --accent-foreground: oklch(0.90 0.05 70);
+
+  --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.235 0.015 65);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
+
+  --border: oklch(0.22 0.04 280);
+  --input: oklch(0.14 0.025 270);
+  --ring: oklch(0.78 0.14 75);
+
+  --chart-1: oklch(0.78 0.14 75);
+  --chart-2: oklch(0.65 0.18 290);
+  --chart-3: oklch(0.60 0.15 200);
+  --chart-4: oklch(0.70 0.12 30);
+  --chart-5: oklch(0.55 0.20 340);
+
+  --sidebar: oklch(0.09 0.02 280);
+  --sidebar-foreground: oklch(0.92 0.04 60);
+  --sidebar-primary: oklch(0.78 0.14 75);
+  --sidebar-primary-foreground: oklch(0.10 0.02 270);
+  --sidebar-accent: oklch(0.16 0.03 270);
+  --sidebar-accent-foreground: oklch(0.85 0.06 70);
+  --sidebar-border: oklch(0.22 0.04 280);
+  --sidebar-ring: oklch(0.78 0.14 75);
+
+  /* Custom Tarot Variables */
+  --gold: oklch(0.78 0.14 75);
+  --gold-light: oklch(0.88 0.12 75);
+  --gold-dark: oklch(0.60 0.12 70);
+  --mystic-purple: oklch(0.45 0.18 290);
+  --mystic-deep: oklch(0.25 0.12 290);
+  --midnight: oklch(0.08 0.02 280);
+  --midnight-card: oklch(0.11 0.025 270);
+  --star-white: oklch(0.96 0.02 80);
 }
 
-.dark {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-500);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
-}
+/* Dark theme same as root - already dark by default */
 
 @layer base {
   * {
@@ -119,6 +110,12 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Cormorant Garamond', 'Georgia', serif;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, oklch(0.20 0.08 290 / 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, oklch(0.18 0.06 280 / 0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, oklch(0.15 0.05 270 / 0.10) 0%, transparent 50%);
+    min-height: 100vh;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -131,27 +128,29 @@
   input[type="radio"]:not(:disabled) {
     @apply cursor-pointer;
   }
+
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cinzel', 'Times New Roman', serif;
+    letter-spacing: 0.05em;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: oklch(0.08 0.02 280); }
+  ::-webkit-scrollbar-thumb { background: oklch(0.78 0.14 75 / 0.4); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: oklch(0.78 0.14 75 / 0.7); }
+
+  /* Selection */
+  ::selection { background: oklch(0.78 0.14 75 / 0.25); color: oklch(0.92 0.04 60); }
 }
 
 @layer components {
-  /**
-   * Custom container utility that centers content and adds responsive padding.
-   *
-   * This overrides Tailwind's default container behavior to:
-   * - Auto-center content (mx-auto)
-   * - Add responsive horizontal padding
-   * - Set max-width for large screens
-   *
-   * Usage: <div className="container">...</div>
-   *
-   * For custom widths, use max-w-* utilities directly:
-   * <div className="max-w-6xl mx-auto px-4">...</div>
-   */
   .container {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem; /* 16px - mobile padding */
+    padding-left: 1rem;
     padding-right: 1rem;
   }
 
@@ -162,16 +161,139 @@
 
   @media (min-width: 640px) {
     .container {
-      padding-left: 1.5rem; /* 24px - tablet padding */
+      padding-left: 1.5rem;
       padding-right: 1.5rem;
     }
   }
 
   @media (min-width: 1024px) {
     .container {
-      padding-left: 2rem; /* 32px - desktop padding */
+      padding-left: 2rem;
       padding-right: 2rem;
-      max-width: 1280px; /* Standard content width */
+      max-width: 1280px;
     }
   }
+
+  /* Gold gradient text */
+  .text-gold-gradient {
+    background: linear-gradient(135deg, oklch(0.88 0.12 75), oklch(0.78 0.14 75), oklch(0.65 0.14 70));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Mystical glow effects */
+  .glow-gold {
+    box-shadow: 0 0 20px oklch(0.78 0.14 75 / 0.3), 0 0 40px oklch(0.78 0.14 75 / 0.15);
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 20px oklch(0.45 0.18 290 / 0.4), 0 0 40px oklch(0.45 0.18 290 / 0.2);
+  }
+
+  /* Mystical card style */
+  .card-mystical {
+    background: linear-gradient(135deg, oklch(0.12 0.03 270), oklch(0.10 0.025 280));
+    border: 1px solid oklch(0.25 0.06 280);
+    transition: all 0.3s ease;
+  }
+
+  .card-mystical:hover {
+    border-color: oklch(0.78 0.14 75 / 0.5);
+    box-shadow: 0 0 30px oklch(0.78 0.14 75 / 0.15), 0 8px 32px oklch(0.05 0.02 280 / 0.5);
+    transform: translateY(-2px);
+  }
+
+  /* Tarot card flip animation */
+  .tarot-card-container { perspective: 1000px; }
+
+  .tarot-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+
+  .tarot-card-inner.flipped { transform: rotateY(180deg); }
+
+  .tarot-card-face,
+  .tarot-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .tarot-card-back { transform: rotateY(180deg); }
+
+  /* Ornamental divider */
+  .ornament-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: oklch(0.78 0.14 75 / 0.5);
+  }
+
+  .ornament-divider::before,
+  .ornament-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, oklch(0.78 0.14 75 / 0.4), transparent);
+  }
+
+  /* Mystic border glass */
+  .border-mystic {
+    border: 1px solid oklch(0.78 0.14 75 / 0.25);
+    background: linear-gradient(135deg, oklch(0.12 0.03 270 / 0.8), oklch(0.10 0.025 280 / 0.8));
+    backdrop-filter: blur(12px);
+  }
+
+  /* Font utilities */
+  .font-display {
+    font-family: 'Cinzel', 'Times New Roman', serif;
+    letter-spacing: 0.05em;
+  }
+
+  .font-serif-elegant {
+    font-family: 'Cormorant Garamond', 'Georgia', serif;
+  }
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    oklch(0.15 0.03 270) 0%,
+    oklch(0.25 0.06 280) 50%,
+    oklch(0.15 0.03 270) 100%
+  );
+  background-size: 200% auto;
+  animation: shimmer 2s linear infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.float-animation { animation: float 4s ease-in-out infinite; }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px oklch(0.78 0.14 75 / 0.2); }
+  50% { box-shadow: 0 0 30px oklch(0.78 0.14 75 / 0.5), 0 0 60px oklch(0.78 0.14 75 / 0.2); }
+}
+
+.pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.8); }
 }
