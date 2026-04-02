@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { ArrowLeft, Sparkles, ImageIcon, RotateCcw, Share2 } from "lucide-react";
+import { ArrowLeft, Sparkles, ImageIcon, RotateCcw, Share2, Copy, MessageCircle, Mail } from "lucide-react";
 import { Streamdown } from "streamdown";
 
 function CardImageDisplay({
@@ -77,18 +77,109 @@ function CardImageDisplay({
 export default function ReadingResult() {
   const { id } = useParams<{ id: string }>();
   const readingId = parseInt(id || "0");
+  const [ogImageUrl, setOgImageUrl] = useState<string | null>(null);
 
   const { data, isLoading, error } = trpc.tarot.getReading.useQuery(
     { readingId },
     { enabled: !!readingId }
   );
 
-  const handleShare = async () => {
+  const generateOGImage = trpc.tarot.generateOGImage.useQuery(
+    { readingId },
+    { enabled: !!readingId && !!data }
+  );
+
+  // OG 이미지 생성 후 URL 설정
+  useEffect(() => {
+    if (generateOGImage.data?.success && generateOGImage.data?.buffer) {
+      const imageUrl = `data:image/png;base64,${generateOGImage.data.buffer}`;
+      setOgImageUrl(imageUrl);
+    }
+  }, [generateOGImage.data]);
+
+  // 메타 태그 동적 업데이트
+  useEffect(() => {
+    if (!data) return;
+
+    const { reading } = data;
+    const pageUrl = window.location.href;
+    const title = `타로 리딩: "${reading.question}"`;
+    const description = reading.interpretation?.substring(0, 100) || "신비로운 타로 리딩 결과를 확인해보세요";
+
+    // 기존 메타 태그 제거
+    document.querySelectorAll('meta[property^="og:"]').forEach(el => el.remove());
+    document.querySelectorAll('meta[name^="twitter:"]').forEach(el => el.remove());
+
+    // OG 메타 태그 추가
+    const addMeta = (name: string, content: string) => {
+      const meta = document.createElement("meta");
+      if (name.startsWith("og:")) {
+        meta.setAttribute("property", name);
+      } else {
+        meta.setAttribute("name", name);
+      }
+      meta.setAttribute("content", content);
+      document.head.appendChild(meta);
+    };
+
+    addMeta("og:title", title);
+    addMeta("og:description", description);
+    addMeta("og:url", pageUrl);
+    addMeta("og:type", "website");
+    
+    if (ogImageUrl) {
+      addMeta("og:image", ogImageUrl);
+      addMeta("og:image:width", "1200");
+      addMeta("og:image:height", "630");
+    }
+
+    // Twitter 카드
+    addMeta("twitter:card", "summary_large_image");
+    addMeta("twitter:title", title);
+    addMeta("twitter:description", description);
+    if (ogImageUrl) {
+      addMeta("twitter:image", ogImageUrl);
+    }
+
+    // 페이지 제목 업데이트
+    document.title = title;
+  }, [data, ogImageUrl]);
+
+  const handleShare = async (platform: "link" | "kakao" | "email") => {
+    const pageUrl = window.location.href;
+    const title = data?.reading.question || "타로 리딩 결과";
+
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success("링크가 복사되었습니다!");
-    } catch {
-      toast.error("링크 복사에 실패했습니다");
+      if (platform === "link") {
+        await navigator.clipboard.writeText(pageUrl);
+        toast.success("링크가 복사되었습니다!");
+      } else if (platform === "kakao") {
+        // 카카오톡 공유 (카카오 SDK 필요)
+        if ((window as any).Kakao) {
+          (window as any).Kakao.Link.sendDefault({
+            objectType: "feed",
+            content: {
+              title: `✦ ${title} ✦`,
+              description: data?.reading.interpretation?.substring(0, 100) || "신비로운 타로 리딩",
+              imageUrl: ogImageUrl || "https://tarotui-eeu5za5r.manus.space/og-default.png",
+              link: {
+                mobileWebUrl: pageUrl,
+                webUrl: pageUrl,
+              },
+            },
+          });
+          toast.success("카카오톡으로 공유되었습니다!");
+        } else {
+          toast.error("카카오톡 공유를 지원하지 않습니다");
+        }
+      } else if (platform === "email") {
+        const subject = encodeURIComponent(`타로 리딩: ${title}`);
+        const body = encodeURIComponent(`나의 타로 리딩 결과를 확인해보세요:\n\n${pageUrl}`);
+        window.open(`mailto:?subject=${subject}&body=${body}`);
+      }
+    } catch (err) {
+      console.error("Share error:", err);
+      toast.error("공유에 실패했습니다");
     }
   };
 
@@ -152,10 +243,20 @@ export default function ReadingResult() {
           </Button>
         </Link>
         <span className="font-display text-primary text-sm tracking-wider">MYSTIC TAROT</span>
-        <Button variant="ghost" size="sm" onClick={handleShare} className="text-muted-foreground hover:text-foreground">
-          <Share2 className="w-4 h-4 mr-2" />
-          공유
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="ghost" size="sm" onClick={() => handleShare("link")} className="text-muted-foreground hover:text-foreground">
+            <Copy className="w-4 h-4 mr-2" />
+            링크
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => handleShare("kakao")} className="text-muted-foreground hover:text-foreground">
+            <MessageCircle className="w-4 h-4 mr-2" />
+            카톡
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => handleShare("email")} className="text-muted-foreground hover:text-foreground">
+            <Mail className="w-4 h-4 mr-2" />
+            이메일
+          </Button>
+        </div>
       </nav>
 
       <div className="container max-w-5xl py-10 space-y-12">
@@ -181,6 +282,15 @@ export default function ReadingResult() {
             </span>
           </div>
         </div>
+
+        {/* OG Image Preview */}
+        {ogImageUrl && (
+          <div className="flex justify-center">
+            <div className="max-w-2xl w-full border border-primary/30 rounded-lg overflow-hidden">
+              <img src={ogImageUrl} alt="OG Preview" className="w-full" />
+            </div>
+          </div>
+        )}
 
         {/* Cards Display */}
         <div>

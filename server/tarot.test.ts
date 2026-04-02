@@ -1,4 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+
+// Canvas 모듈 모의 처리
+vi.mock("canvas");
+
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 

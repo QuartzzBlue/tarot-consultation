@@ -16,6 +16,7 @@ import {
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
+import { generateOGImage } from "./og-image";
 
 export const appRouter = router({
   system: systemRouter,
@@ -228,6 +229,36 @@ ${cardDescriptions}
         } catch (error) {
           console.error("Image generation error:", error);
           throw new Error("Failed to generate card image");
+        }
+      }),
+
+    // OG 이미지 동적 생성 (소셜 공유용)
+    generateOGImage: publicProcedure
+      .input(z.object({ readingId: z.number() }))
+      .query(async ({ input }) => {
+        const reading = await getReadingWithCards(input.readingId);
+        if (!reading) throw new Error("Reading not found");
+
+        const { reading: readingData, cards } = reading;
+        const cardNames = cards.map((c) => c.card.nameKo);
+        const summary = readingData.interpretation?.substring(0, 150) || "";
+
+        try {
+          const imageBuffer = await generateOGImage({
+            question: readingData.question,
+            interpretation: summary,
+            cardNames,
+            spreadType: readingData.spreadType,
+          });
+
+          return {
+            success: true,
+            buffer: imageBuffer.toString("base64"),
+            mimeType: "image/png",
+          };
+        } catch (error) {
+          console.error("OG image generation error:", error);
+          throw new Error("Failed to generate OG image");
         }
       }),
   }),
