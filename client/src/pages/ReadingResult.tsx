@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { ArrowLeft, Sparkles, ImageIcon, RotateCcw, Share2, Copy, MessageCircle, Mail } from "lucide-react";
+import { ArrowLeft, Sparkles, ImageIcon, RotateCcw, Copy, MessageCircle, Mail } from "lucide-react";
 import { Streamdown } from "streamdown";
 
 function CardImageDisplay({
@@ -77,25 +77,11 @@ function CardImageDisplay({
 export default function ReadingResult() {
   const { id } = useParams<{ id: string }>();
   const readingId = parseInt(id || "0");
-  const [ogImageUrl, setOgImageUrl] = useState<string | null>(null);
 
   const { data, isLoading, error } = trpc.tarot.getReading.useQuery(
     { readingId },
     { enabled: !!readingId }
   );
-
-  const generateOGImage = trpc.tarot.generateOGImage.useQuery(
-    { readingId },
-    { enabled: !!readingId && !!data }
-  );
-
-  // OG 이미지 생성 후 URL 설정
-  useEffect(() => {
-    if (generateOGImage.data?.success && generateOGImage.data?.buffer) {
-      const imageUrl = `data:image/png;base64,${generateOGImage.data.buffer}`;
-      setOgImageUrl(imageUrl);
-    }
-  }, [generateOGImage.data]);
 
   // 메타 태그 동적 업데이트
   useEffect(() => {
@@ -126,24 +112,15 @@ export default function ReadingResult() {
     addMeta("og:description", description);
     addMeta("og:url", pageUrl);
     addMeta("og:type", "website");
-    
-    if (ogImageUrl) {
-      addMeta("og:image", ogImageUrl);
-      addMeta("og:image:width", "1200");
-      addMeta("og:image:height", "630");
-    }
 
     // Twitter 카드
-    addMeta("twitter:card", "summary_large_image");
+    addMeta("twitter:card", "summary");
     addMeta("twitter:title", title);
     addMeta("twitter:description", description);
-    if (ogImageUrl) {
-      addMeta("twitter:image", ogImageUrl);
-    }
 
     // 페이지 제목 업데이트
     document.title = title;
-  }, [data, ogImageUrl]);
+  }, [data]);
 
   const handleShare = async (platform: "link" | "kakao" | "email") => {
     const pageUrl = window.location.href;
@@ -161,7 +138,6 @@ export default function ReadingResult() {
             content: {
               title: `✦ ${title} ✦`,
               description: data?.reading.interpretation?.substring(0, 100) || "신비로운 타로 리딩",
-              imageUrl: ogImageUrl || "https://tarotui-eeu5za5r.manus.space/og-default.png",
               link: {
                 mobileWebUrl: pageUrl,
                 webUrl: pageUrl,
@@ -282,15 +258,6 @@ export default function ReadingResult() {
             </span>
           </div>
         </div>
-
-        {/* OG Image Preview */}
-        {ogImageUrl && (
-          <div className="flex justify-center">
-            <div className="max-w-2xl w-full border border-primary/30 rounded-lg overflow-hidden">
-              <img src={ogImageUrl} alt="OG Preview" className="w-full" />
-            </div>
-          </div>
-        )}
 
         {/* Cards Display */}
         <div>

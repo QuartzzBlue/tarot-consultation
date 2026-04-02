@@ -16,7 +16,6 @@ import {
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
-import { generateOGImage } from "./og-image";
 
 export const appRouter = router({
   system: systemRouter,
@@ -128,50 +127,43 @@ export const appRouter = router({
 ${cardDescriptions}
 
 [말투와 분위기]
-- 조용한 밤에 촛불을 켜두고 이야기를 나누는 듯한, 느리고 차분한 어조로 말해 주세요.
-- "지금 카드들이 전해 주는 기운은…", "이 카드가 속삭이는 메시지는…"처럼
-  상징과 기운을 전하는 표현을 자주 사용해 주세요.
-- 사용자의 감정을 가볍게 다루지 말고, 한 걸음 떨어져서 부드럽게 비추는 듯한 시선으로 이야기해 주세요.
-- 미래를 단정적으로 예언하지 말고,
-  "이 흐름이 계속된다면", "이 길 위에서 당신이 선택할 수 있는 방향은"처럼
-  가능성과 길을 제시하는 표현을 사용해 주세요.
+- 현실과 영적 세계를 잇는 중개자처럼, 차분하고 신비로운 톤을 유지해 주세요.
+- 사용자의 상황을 깊이 있게 이해하고, 그 안에 숨겨진 의미를 찾아내는 느낌으로 표현해 주세요.
+- 단정적이지 않고, "~일 수도 있어요", "~의 신호로 보여요"처럼 여지를 두되,
+  그 여지 속에 깊은 통찰력이 느껴지도록 써 주세요.
+- 상징과 이미지를 풍부하게 사용하여, 읽는 사람이 명상하듯 빠져들 수 있게 표현해 주세요.
+- 너무 학술적이거나 딱딱하지 않으면서도, 진정성 있고 깊이 있는 톤을 유지해 주세요.
 
 [답변 길이]
-- 각 번호 섹션은 4~6문장 정도로, 비교적 자세하고 풍부하게 설명해 주세요.
-- 전체 답변은 한 편의 짧은 신비로운 이야기처럼 느껴질 정도의 분량을 목표로 해 주세요.
+- 각 섹션은 자세하고 풍부하게, 마치 한 편의 시적 상담처럼 느껴질 정도로 써 주세요.
+- 전체 답변은 깊이 있는 명상적 경험을 제공할 정도의 분량을 목표로 해 주세요.
 
 [출력 형식]
-1. 지금 분위기 한 문단 요약 (4~6문장)
-   - 카드 전체 조합으로 본 현재 흐름을 한 문단으로 정리해 주세요.
-   - 밤공기, 물결, 길, 문, 안개 등 은유와 이미지를 활용해,
-     질문자의 지금 상태를 풍경처럼 묘사해 주세요.
+1. 지금 분위기 한 문단 요약 (5~7문장)
+   - 카드 전체 조합으로 본 현재의 에너지와 흐름을 시적으로 표현해 주세요.
+   - 사용자가 "아, 이게 지금 내 상황이구나"라고 느낄 수 있게 구체적이면서도 신비로운 표현으로 써 주세요.
 
-2. 카드별 해석 (카드 1장당 4~6문장)
+2. 카드별 해석 (카드 1장당 5~7문장)
    - 각 카드에 대해 다음을 포함해 주세요:
      - 카드 이름과 위치(예: 과거, 현재, 미래, 조언 등)
      - 이 카드가 전통적으로 상징하는 핵심 의미
-     - 그 의미가 질문자의 상황에서 어떤 장면, 어떤 분위기로 나타나는지
-       시적인 이미지와 함께 설명해 주세요.
-     - 필요하다면 색, 빛, 계절 등 감각적인 요소를 활용해 서술해 주세요.
+     - 질문자의 상황에 이 의미가 어떻게 연결되는지 깊이 있게 설명
+     - 상징적이고 이미지적인 표현으로, 사용자가 공감할 수 있는 방식으로 표현
+   - 각 카드마다 그 카드만의 독특한 에너지와 메시지를 느낄 수 있게 써 주세요.
 
-3. 종합 이야기 (한 문단, 5~8문장)
+3. 종합 이야기 (한 문단, 6~9문장)
    - 모든 카드를 하나의 흐름과 이야기로 연결해서 설명해 주세요.
-   - 한 편의 짧은 이야기처럼, 시작–전개–전환–가능성의 순서로 풀어 주세요.
-   - "당신은 지금 어떤 문 앞에 서 있는지", "어디에서 무엇을 내려놓고 있는지",
-     "앞으로 어떤 빛을 향해 걸어갈 수 있는지"를 중심으로 풀어 주세요.
+   - 과거 → 현재 → 앞으로의 방향이 자연스럽게 이어지도록, 마치 한 편의 이야기를 읽는 듯이 써 주세요.
+   - 상황의 어려움은 인정하되, 그 안에서 발견할 수 있는 의미와 성장의 가능성에 초점을 맞춰 주세요.
 
 4. 현실적인 조언 (번호 매긴 리스트로 3~5개)
-   - 신비로운 분위기는 유지하되, 결국 질문자가 지금 삶에서 시도해 볼 수 있는
-     구체적인 행동이나 태도를 제안해 주세요.
-   - "오늘 하루 동안", "다가오는 일주일 동안"처럼 시간의 틀을 잡아 주어,
-     현실에서 실천 가능한 방향을 제시해 주세요.
-   - 명령이 아니라, "이런 선택을 해 본다면", "이렇게 자신을 돌보는 것도"
-     좋겠다는 제안의 어조를 유지해 주세요.
+   - 질문자가 지금 당장 실천할 수 있는 행동이나 태도를 제안해 주세요.
+   - 추상적이지 않으면서도, 신비로운 분위기를 잃지 않는 표현으로 써 주세요.
+   - 명령이 아니라 제안의 느낌으로, "~을 시도해 보는 것도 좋을 것 같아요"처럼 표현해 주세요.
 
-5. 조용한 한 줄 마무리
-   - 부드럽고 신비로운 여운이 남는 문장으로 마무리해 주세요.
-   - 질문자가 스스로의 길을 조금 더 믿어 볼 수 있도록, 
-     잔잔한 확신을 건네는 한 문장을 써 주세요.`;
+5. 따뜻한 한 줄 마무리
+   - 질문자에게 용기와 희망을 전할 수 있는 문장을 한 줄로 정리해 주세요.
+   - 신비로운 분위기를 유지하면서도, 진심이 느껴지도록 표현해 주세요.`;
 
         try {
           const llmResponse = await invokeLLM({
@@ -229,36 +221,6 @@ ${cardDescriptions}
         } catch (error) {
           console.error("Image generation error:", error);
           throw new Error("Failed to generate card image");
-        }
-      }),
-
-    // OG 이미지 동적 생성 (소셜 공유용)
-    generateOGImage: publicProcedure
-      .input(z.object({ readingId: z.number() }))
-      .query(async ({ input }) => {
-        const reading = await getReadingWithCards(input.readingId);
-        if (!reading) throw new Error("Reading not found");
-
-        const { reading: readingData, cards } = reading;
-        const cardNames = cards.map((c) => c.card.nameKo);
-        const summary = readingData.interpretation?.substring(0, 150) || "";
-
-        try {
-          const imageBuffer = await generateOGImage({
-            question: readingData.question,
-            interpretation: summary,
-            cardNames,
-            spreadType: readingData.spreadType,
-          });
-
-          return {
-            success: true,
-            buffer: imageBuffer.toString("base64"),
-            mimeType: "image/png",
-          };
-        } catch (error) {
-          console.error("OG image generation error:", error);
-          throw new Error("Failed to generate OG image");
         }
       }),
   }),
