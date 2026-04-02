@@ -34,7 +34,7 @@ const SPREAD_CONFIG: Record<SpreadType, { label: string; count: number; descript
 };
 
 // Tarot card back design SVG pattern
-function CardBack({ isSelected, onClick }: { isSelected: boolean; onClick: () => void }) {
+function CardBack({ isSelected, selectionOrder, onClick, isShuffling }: { isSelected: boolean; selectionOrder?: number; onClick: () => void; isShuffling?: boolean }) {
   return (
     <div
       onClick={onClick}
@@ -42,7 +42,7 @@ function CardBack({ isSelected, onClick }: { isSelected: boolean; onClick: () =>
         isSelected
           ? "ring-2 ring-primary glow-gold scale-105"
           : "hover:scale-105 hover:ring-1 hover:ring-primary/50"
-      }`}
+      } ${isShuffling ? "animate-pulse" : ""}`}
       style={{ aspectRatio: "2/3" }}
     >
       <div className="absolute inset-0 bg-gradient-to-b from-[oklch(0.15_0.08_290)] to-[oklch(0.08_0.04_280)]">
@@ -61,10 +61,10 @@ function CardBack({ isSelected, onClick }: { isSelected: boolean; onClick: () =>
           <text x="50" y="130" textAnchor="middle" fill="oklch(0.78 0.14 75 / 0.5)" fontSize="6" fontFamily="serif">✦ MYSTIC TAROT ✦</text>
         </svg>
       </div>
-      {isSelected && (
-        <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
-          <div className="w-8 h-8 rounded-full bg-primary/80 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-primary-foreground" />
+      {isSelected && selectionOrder !== undefined && (
+        <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+            <span className="text-primary-foreground font-display font-bold text-lg">{selectionOrder}</span>
           </div>
         </div>
       )}
@@ -92,14 +92,75 @@ function CardFront({ card, isReversed }: { card: TarotCard; isReversed: boolean 
   );
 }
 
+// Card flip animation component
+function FlipCard({ card, isReversed, isFlipped, onFlipComplete }: { card: TarotCard; isReversed: boolean; isFlipped: boolean; onFlipComplete?: () => void }) {
+  return (
+    <div
+      className="relative cursor-pointer"
+      style={{
+        aspectRatio: "2/3",
+        perspective: "1000px",
+      }}
+      onClick={onFlipComplete}
+    >
+      <div
+        className="relative w-full h-full transition-transform duration-700"
+        style={{
+          transformStyle: "preserve-3d",
+          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+        }}
+      >
+        {/* Card back */}
+        <div
+          className="absolute w-full h-full rounded-lg overflow-hidden bg-gradient-to-b from-[oklch(0.15_0.08_290)] to-[oklch(0.08_0.04_280)]"
+          style={{ backfaceVisibility: "hidden" }}
+        >
+          <svg viewBox="0 0 100 150" className="w-full h-full opacity-80">
+            <defs>
+              <pattern id="stars-flip" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                <polygon points="10,2 12,8 18,8 13,12 15,18 10,14 5,18 7,12 2,8 8,8" fill="none" stroke="oklch(0.78 0.14 75 / 0.3)" strokeWidth="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="100" height="150" fill="url(#stars-flip)"/>
+            <rect x="5" y="5" width="90" height="140" fill="none" stroke="oklch(0.78 0.14 75 / 0.5)" strokeWidth="1" rx="3"/>
+            <circle cx="50" cy="75" r="20" fill="none" stroke="oklch(0.78 0.14 75 / 0.6)" strokeWidth="1"/>
+            <polygon points="50,58 54,68 65,68 56,75 59,86 50,79 41,86 44,75 35,68 46,68" fill="oklch(0.78 0.14 75 / 0.4)" stroke="oklch(0.78 0.14 75 / 0.6)" strokeWidth="0.5"/>
+          </svg>
+        </div>
+
+        {/* Card front */}
+        <div
+          className="absolute w-full h-full rounded-lg overflow-hidden border border-primary/30"
+          style={{
+            backfaceVisibility: "hidden",
+            transform: "rotateY(180deg)",
+          }}
+        >
+          {card.imageUrl ? (
+            <img src={card.imageUrl} alt={card.nameKo} className={`w-full h-full object-cover ${isReversed ? "rotate-180" : ""}`} />
+          ) : (
+            <div className={`absolute inset-0 bg-gradient-to-b from-[oklch(0.15_0.08_290)] to-[oklch(0.08_0.04_280)] flex flex-col items-center justify-center p-3 ${isReversed ? "rotate-180" : ""}`}>
+              <div className="text-primary/60 text-2xl mb-2">✦</div>
+              <p className="text-primary font-display text-xs text-center leading-tight">{card.nameKo}</p>
+              <p className="text-muted-foreground text-xs text-center mt-1 opacity-70">{card.name}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function TarotReading() {
   const [, navigate] = useLocation();
-  const [step, setStep] = useState<"spread" | "question" | "cards" | "loading">("spread");
+  const [step, setStep] = useState<"spread" | "question" | "cards" | "confirm" | "loading">("spread");
   const [spreadType, setSpreadType] = useState<SpreadType>("three-card");
   const [question, setQuestion] = useState("");
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
   const [reversedStates, setReversedStates] = useState<boolean[]>([]);
   const [shuffledOrder, setShuffledOrder] = useState<number[]>([]);
+  const [isShuffling, setIsShuffling] = useState(false);
+  const [flippedCards, setFlippedCards] = useState<Set<number>>(new Set());
 
   const { data: allCards, isLoading: cardsLoading } = trpc.tarot.getAllCards.useQuery();
   const createReading = trpc.tarot.createReading.useMutation();
@@ -119,10 +180,15 @@ export default function TarotReading() {
     return shuffled;
   }, [allCards, shuffledOrder]);
 
-  const handleShuffle = () => {
+  const handleShuffle = async () => {
+    setIsShuffling(true);
+    // Simulate shuffling animation
+    await new Promise(resolve => setTimeout(resolve, 1200));
     setShuffledOrder(prev => [...prev, Date.now()]);
     setSelectedIndices([]);
     setReversedStates([]);
+    setFlippedCards(new Set());
+    setIsShuffling(false);
   };
 
   const handleCardSelect = (deckIndex: number) => {
@@ -134,6 +200,18 @@ export default function TarotReading() {
       setSelectedIndices(prev => [...prev, deckIndex]);
       setReversedStates(prev => [...prev, Math.random() < 0.3]); // 30% chance reversed
     }
+  };
+
+  const handleFlipCard = (index: number) => {
+    setFlippedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
   };
 
   const handleSubmit = async () => {
@@ -161,7 +239,7 @@ export default function TarotReading() {
       navigate(`/reading/${result.readingId}`);
     } catch (error) {
       toast.error("리딩 생성 중 오류가 발생했습니다");
-      setStep("cards");
+      setStep("confirm");
     }
   };
 
@@ -182,16 +260,16 @@ export default function TarotReading() {
       <div className="container max-w-5xl py-10">
         {/* Progress indicator */}
         <div className="flex items-center justify-center gap-2 mb-10">
-          {["spread", "question", "cards"].map((s, i) => (
+          {["spread", "question", "cards", "confirm"].map((s, i) => (
             <div key={s} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-display font-bold transition-all ${
                 step === s ? "bg-primary text-primary-foreground glow-gold" :
-                ["spread", "question", "cards"].indexOf(step) > i ? "bg-primary/30 text-primary" :
+                ["spread", "question", "cards", "confirm"].indexOf(step) > i ? "bg-primary/30 text-primary" :
                 "bg-muted text-muted-foreground"
               }`}>
                 {i + 1}
               </div>
-              {i < 2 && <div className="w-12 h-px bg-border" />}
+              {i < 3 && <div className="w-12 h-px bg-border" />}
             </div>
           ))}
         </div>
@@ -260,7 +338,7 @@ export default function TarotReading() {
                 placeholder="예: 지금 제 연애 상황은 어떻게 흘러갈까요? / 새로운 직장으로 이직해야 할까요? / 현재 제 삶에서 가장 중요한 것은 무엇인가요?"
                 className="min-h-36 bg-transparent border-border/50 text-foreground placeholder:text-muted-foreground/50 resize-none font-serif-elegant text-base leading-relaxed"
               />
-              <p className="text-xs text-muted-foreground text-right">{question.length}/500</p>
+              <div className="text-xs text-muted-foreground text-right">{question.length}/500</div>
             </div>
 
             <div className="flex justify-between">
@@ -270,7 +348,7 @@ export default function TarotReading() {
               </Button>
               <Button
                 onClick={() => setStep("cards")}
-                disabled={question.trim().length < 5}
+                disabled={!question.trim()}
                 className="font-display px-8"
               >
                 카드 선택하기
@@ -281,76 +359,46 @@ export default function TarotReading() {
         )}
 
         {/* Step 3: Card Selection */}
-        {step === "cards" && (
+        {step === "cards" && !cardsLoading && allCards && (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
             <div className="text-center">
               <h1 className="font-display text-4xl font-bold text-foreground mb-3">카드 선택</h1>
               <p className="text-muted-foreground">
-                직관을 따라 {spread.count}장의 카드를 선택해주세요
-                <span className="text-primary ml-2">({selectedIndices.length}/{spread.count})</span>
+                직관을 따라 {spread.count}장의 카드를 선택해주세요({selectedIndices.length}/{spread.count})
               </p>
             </div>
 
-            {/* Selected cards preview */}
-            {selectedIndices.length > 0 && allCards && (
-              <div className="border-mystic rounded-xl p-4">
-                <p className="text-xs font-display text-primary/60 mb-3 text-center">선택된 카드</p>
-                <div className="flex gap-4 justify-center flex-wrap">
-                  {selectedIndices.map((deckIdx, pos) => {
-                    const card = allCards[shuffledDeck[deckIdx]];
-                    return (
-                      <div key={pos} className="text-center space-y-1">
-                        <div className="w-16">
-                          <CardFront card={card} isReversed={reversedStates[pos]} />
-                        </div>
-                        <p className="text-xs text-primary font-display">{spread.positions[pos]}</p>
-                        <p className="text-xs text-muted-foreground">{card.nameKo}</p>
-                        {reversedStates[pos] && (
-                          <Badge variant="secondary" className="text-xs">역방향</Badge>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Shuffle button */}
-            <div className="flex justify-center gap-4">
-              <Button variant="outline" onClick={handleShuffle} className="font-display border-primary/30">
-                <Shuffle className="w-4 h-4 mr-2" />
-                덱 섞기
+            <div className="flex justify-center">
+              <Button
+                onClick={handleShuffle}
+                disabled={isShuffling}
+                variant="outline"
+                className="font-display gap-2"
+              >
+                <Shuffle className={`w-4 h-4 ${isShuffling ? "animate-spin" : ""}`} />
+                {isShuffling ? "섞는 중..." : "덱 섞기"}
               </Button>
-              {selectedIndices.length > 0 && (
-                <Button
-                  variant="outline"
-                  onClick={() => { setSelectedIndices([]); setReversedStates([]); }}
-                  className="font-display border-destructive/30 text-destructive hover:bg-destructive/10"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  선택 초기화
-                </Button>
-              )}
             </div>
 
-            {/* Card deck grid */}
-            {cardsLoading ? (
-              <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13 gap-2">
-                {[...Array(78)].map((_, i) => (
-                  <div key={i} className="shimmer rounded-lg" style={{ aspectRatio: "2/3" }} />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-13 gap-2">
-                {shuffledDeck.map((cardIdx, deckIdx) => (
-                  <CardBack
-                    key={deckIdx}
-                    isSelected={selectedIndices.includes(deckIdx)}
-                    onClick={() => handleCardSelect(deckIdx)}
-                  />
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-2">
+              {shuffledDeck.map((cardIdx, deckPos) => {
+                const isSelected = selectedIndices.includes(deckPos);
+                const selectionOrder = isSelected ? selectedIndices.indexOf(deckPos) + 1 : undefined;
+                return (
+                  <div
+                    key={deckPos}
+                    className={`transition-all ${isSelected ? "scale-110 z-10" : ""}`}
+                  >
+                    <CardBack
+                      isSelected={isSelected}
+                      selectionOrder={selectionOrder}
+                      onClick={() => handleCardSelect(deckPos)}
+                      isShuffling={isShuffling}
+                    />
+                  </div>
+                );
+              })}
+            </div>
 
             <div className="flex justify-between">
               <Button variant="outline" onClick={() => setStep("question")} className="font-display">
@@ -358,12 +406,72 @@ export default function TarotReading() {
                 이전
               </Button>
               <Button
-                onClick={handleSubmit}
+                onClick={() => setStep("confirm")}
                 disabled={selectedIndices.length !== spread.count}
+                className="font-display px-8"
+              >
+                다음 단계
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Card Confirmation with Flip Animation */}
+        {step === "confirm" && !cardsLoading && allCards && (
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+            <div className="text-center">
+              <h1 className="font-display text-4xl font-bold text-foreground mb-3">선택된 카드</h1>
+              <p className="text-muted-foreground">카드를 클릭하여 뒤집어보세요</p>
+            </div>
+
+            <div className="grid gap-8 max-w-4xl mx-auto">
+              {selectedIndices.map((deckPos, idx) => {
+                const cardIdx = shuffledDeck[deckPos];
+                const card = allCards[cardIdx];
+                const isReversed = reversedStates[idx];
+                const isFlipped = flippedCards.has(idx);
+
+                return (
+                  <div key={idx} className="space-y-3">
+                    <div className="text-center">
+                      <Badge variant="secondary" className="font-display">
+                        {spread.positions[idx]}
+                      </Badge>
+                    </div>
+                    <div className="flex justify-center">
+                      <div className="w-32 sm:w-40">
+                        <FlipCard
+                          card={card}
+                          isReversed={isReversed}
+                          isFlipped={isFlipped}
+                          onFlipComplete={() => handleFlipCard(idx)}
+                        />
+                      </div>
+                    </div>
+                    {isFlipped && (
+                      <div className="text-center space-y-1 animate-in fade-in">
+                        <p className="font-display text-lg text-primary">{card.nameKo}</p>
+                        <p className="text-sm text-muted-foreground">{isReversed ? "역방향" : "정방향"}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStep("cards")} className="font-display">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                카드 다시 선택
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={createReading.isPending}
                 className="font-display px-8 glow-gold"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
-                리딩 받기
+                {createReading.isPending ? "리딩 생성 중..." : "리딩 받기"}
               </Button>
             </div>
           </div>
@@ -371,16 +479,13 @@ export default function TarotReading() {
 
         {/* Loading state */}
         {step === "loading" && (
-          <div className="flex flex-col items-center justify-center py-32 space-y-8 animate-in fade-in">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full border-2 border-primary/30 animate-spin border-t-primary" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-primary float-animation" />
-              </div>
+          <div className="flex flex-col items-center justify-center py-20 space-y-6">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center animate-pulse">
+              <Sparkles className="w-8 h-8 text-primary animate-spin" />
             </div>
             <div className="text-center space-y-2">
-              <h2 className="font-display text-2xl font-semibold text-foreground">카드를 해석하는 중...</h2>
-              <p className="text-muted-foreground">우주의 메시지를 읽고 있습니다</p>
+              <p className="font-display text-lg text-foreground">타로의 메시지를 해석 중...</p>
+              <p className="text-muted-foreground text-sm">잠시만 기다려주세요</p>
             </div>
           </div>
         )}
